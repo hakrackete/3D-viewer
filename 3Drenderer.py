@@ -28,6 +28,8 @@ def compile_shader(source, shader_type):
     glShaderSource(shader, source)
     glCompileShader(shader)
 
+
+
     if not glGetShaderiv(shader, GL_COMPILE_STATUS):
         raise Exception("Shader compilation failed: " + glGetShaderInfoLog(shader).decode())
 
@@ -49,6 +51,7 @@ def compile_shader_program(vertex_source, fragment_source,tcontrol_source,tevalu
     glLinkProgram(shader_program)
     check_gl_error()
 
+    glValidateProgram(shader_program)
 
     if not glGetProgramiv(shader_program, GL_LINK_STATUS):
         raise Exception("Shader program linking failed: " + glGetProgramInfoLog(shader_program).decode())
@@ -128,7 +131,14 @@ def process_input(window):
         view_matrix = glm.scale(view_matrix, glm.vec3(scale_factor, scale_factor, scale_factor))
 
 
-
+@GLDEBUGPROC
+def debug_callback(source, type, id, severity, length, message, user_param):
+    print(f"OpenGL Debug Message:")
+    print(f"  Source: {source}")
+    print(f"  Type: {type}")
+    print(f"  ID: {id}")
+    print(f"  Severity: {severity}")
+    print(f"  Message: {message}")
 
 def main():
     global view_matrix
@@ -142,9 +152,18 @@ def main():
         glfw.terminate()
         return
 
+    glfw.window_hint(glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE)
+    glfw.window_hint(glfw.CONTEXT_VERSION_MAJOR, 4)
+    glfw.window_hint(glfw.CONTEXT_VERSION_MINOR, 1)
     glfw.make_context_current(window)
 
+
     glEnable(GL_DEPTH_TEST)
+
+    glEnable(GL_DEBUG_OUTPUT)
+    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS)
+    glDebugMessageCallback(debug_callback, None)
+
 
     # Set up shaders
     shader_program = compile_shader_program(vertex_shader, fragment_shader,tc_shader,te_shader)
@@ -179,14 +198,15 @@ def main():
         glUniformMatrix4fv(model_location, 1, GL_FALSE, glm.value_ptr(model_matrix))
         glUniformMatrix4fv(view_location, 1, GL_FALSE, glm.value_ptr(view_matrix))
         glUniformMatrix4fv(projection_location, 1, GL_FALSE, glm.value_ptr(projection_matrix))
-        tessellation_level = 3.0  # Setze hier den gewünschten Wert
+        tessellation_level = 4.0  # Setze hier den gewünschten Wert
         glUniform1f(tessellation_level_location, tessellation_level)
 
 
         glBindVertexArray(model_vao)
         check_gl_error()
 
-        glDrawArrays(GL_TRIANGLES, 0, num_vertices)
+        glDrawArrays(GL_PATCHES, 0, num_vertices)
+        # glDrawElements(GL_PATCHES,num_vertices,GL_UNSIGNED_INT,0)
         check_gl_error()
 
 

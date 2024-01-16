@@ -57,6 +57,6 @@ void main()
                      oPatch.WorldPos_B210 * 3.0 * wPow2 * u + oPatch.WorldPos_B120 * 3.0 * w * uPow2 + oPatch.WorldPos_B201 * 3.0 * wPow2 * v + 
                      oPatch.WorldPos_B021 * 3.0 * uPow2 * v + oPatch.WorldPos_B102 * 3.0 * w * vPow2 + oPatch.WorldPos_B012 * 3.0 * u * vPow2 + 
                      oPatch.WorldPos_B111 * 6.0 * w * u * v;   
-    mat4 gVP = view * projection;                               
+    mat4 gVP = projection * view;                               
     gl_Position = gVP * vec4(WorldPos_FS_in, 1.0);                                              
 }                                                                                               
