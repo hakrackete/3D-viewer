@@ -140,6 +140,7 @@ def process_input(window):
             tessellation_level = float(i)
     
     if glfw.get_key(window, glfw.KEY_H):
+        
         print(f"Tesselation Level: {tessellation_level} + \nSkalierung: {scale_factor} + \nwireframe Modeus: {wireframemode}")
 
     
