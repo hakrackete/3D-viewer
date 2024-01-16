@@ -11,6 +11,11 @@ clock = time.Clock()
 view_matrix = glm.mat4(1.0)
 scale_factor = 1.0
 
+tessellation_level = 1.0  # Setze hier den gewünschten Wert
+
+wireframemode = False
+
+
 vertex_shader = open("./shaders/vertex_tc.vert","r").read()
 fragment_shader = open("./shaders/fragment_tc.frag","r").read()
 tc_shader = open("./shaders/tcs.glsl","r")
@@ -100,7 +105,7 @@ def load_model(file_path):
 
 
 def process_input(window):
-    global view_matrix
+    global view_matrix,tessellation_level,wireframemode
     scale_factor =1
 
     # Rotationsgeschwindigkeit
@@ -112,23 +117,37 @@ def process_input(window):
     if glfw.get_key(window, glfw.KEY_RIGHT) == glfw.PRESS:
         # Drehung nach rechts um die y-Achse
         view_matrix = glm.rotate(view_matrix, rotation_speed, glm.vec3(0.0, 1.0, 0.0))
-    elif glfw.get_key(window, glfw.KEY_LEFT) == glfw.PRESS:
+    if glfw.get_key(window, glfw.KEY_LEFT) == glfw.PRESS:
         # Drehung nach links um die y-Achse
         view_matrix = glm.rotate(view_matrix, -rotation_speed, glm.vec3(0.0, 1.0, 0.0))
-    elif glfw.get_key(window, glfw.KEY_UP) == glfw.PRESS:
+    if glfw.get_key(window, glfw.KEY_UP) == glfw.PRESS:
         # Drehung nach oben um die x-Achse
         view_matrix = glm.rotate(view_matrix, -rotation_speed, glm.vec3(1.0, 0.0, 0.0))
-    elif glfw.get_key(window, glfw.KEY_DOWN) == glfw.PRESS:
+    if glfw.get_key(window, glfw.KEY_DOWN) == glfw.PRESS:
         # Drehung nach unten um die x-Achse
         view_matrix = glm.rotate(view_matrix, rotation_speed, glm.vec3(1.0, 0.0, 0.0))
-    elif glfw.get_key(window, glfw.KEY_W) == glfw.PRESS:
+    if glfw.get_key(window, glfw.KEY_W) == glfw.PRESS:
         # Skalierung nach vorne (verkleinern)
         scale_factor -= scaling_speed
         view_matrix = glm.scale(view_matrix, glm.vec3(scale_factor, scale_factor, scale_factor))
-    elif glfw.get_key(window, glfw.KEY_S) == glfw.PRESS:
+    if glfw.get_key(window, glfw.KEY_S) == glfw.PRESS:
         # Skalierung nach hinten (vergrößern)
         scale_factor += scaling_speed
         view_matrix = glm.scale(view_matrix, glm.vec3(scale_factor, scale_factor, scale_factor))
+
+    for i, key in enumerate(range(glfw.KEY_0, glfw.KEY_9 + 1)):
+        if glfw.get_key(window, key) == glfw.PRESS:
+            tessellation_level = float(i)
+    
+    if glfw.get_key(window, glfw.KEY_H):
+        print(f"Tesselation Level: {tessellation_level} + \nSkalierung: {scale_factor} + \nwireframe Modeus: {wireframemode}")
+
+    
+    if glfw.get_key(window, glfw.KEY_T):
+        wireframemode = not(wireframemode)
+                  
+
+
 
 
 @GLDEBUGPROC
@@ -184,6 +203,11 @@ def main():
     projection_matrix = glm.perspective(glm.radians(45.0), 800 / 600, 0.1, 100.0)
 
     while not glfw.window_should_close(window):
+        if wireframemode:
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)   
+        else:
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
+
         clock.tick(60)
         glfw.poll_events()
 
@@ -198,7 +222,6 @@ def main():
         glUniformMatrix4fv(model_location, 1, GL_FALSE, glm.value_ptr(model_matrix))
         glUniformMatrix4fv(view_location, 1, GL_FALSE, glm.value_ptr(view_matrix))
         glUniformMatrix4fv(projection_location, 1, GL_FALSE, glm.value_ptr(projection_matrix))
-        tessellation_level = 4.0  # Setze hier den gewünschten Wert
         glUniform1f(tessellation_level_location, tessellation_level)
 
 
