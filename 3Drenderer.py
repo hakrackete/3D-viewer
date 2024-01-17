@@ -5,6 +5,11 @@ import glm
 import ctypes
 from pygame import time
 
+
+model_path = 'models/susanne.obj'
+
+
+
 clock = time.Clock()
 
 
@@ -14,6 +19,7 @@ scale_factor = 1.0
 tessellation_level = 1.0  # Setze hier den gewünschten Wert
 
 wireframemode = False
+illuminate_everything = 0
 
 
 vertex_shader = open("./shaders/vertex_tc.vert","r").read()
@@ -103,6 +109,19 @@ def load_model(file_path):
 
     return vao, len(mesh.vertices)
 
+def key_callback(window, key, scancode, action, mods):
+    global wireframemode,illuminate_everything,wireframemode,scale_factor
+    if key == glfw.KEY_T and action == glfw.PRESS:
+        wireframemode = not(wireframemode)
+    if key == glfw.KEY_L and action == glfw.PRESS:
+        illuminate_everything = 1 - illuminate_everything
+    if key == glfw.KEY_H and action == glfw.PRESS:
+
+        print(f"Tesselation Level: {tessellation_level}  \nSkalierung: {scale_factor}  \nwireframe Modus: {wireframemode}")
+
+    
+
+# Set the key callback function
 
 def process_input(window):
     global view_matrix,tessellation_level,wireframemode
@@ -135,18 +154,15 @@ def process_input(window):
         scale_factor += scaling_speed
         view_matrix = glm.scale(view_matrix, glm.vec3(scale_factor, scale_factor, scale_factor))
 
+
     for i, key in enumerate(range(glfw.KEY_0, glfw.KEY_9 + 1)):
         if glfw.get_key(window, key) == glfw.PRESS:
             tessellation_level = float(i)
     
-    if glfw.get_key(window, glfw.KEY_H):
-        
-        print(f"Tesselation Level: {tessellation_level} + \nSkalierung: {scale_factor} + \nwireframe Modeus: {wireframemode}")
 
-    
-    if glfw.get_key(window, glfw.KEY_T):
-        wireframemode = not(wireframemode)
-                  
+        
+
+
 
 
 
@@ -193,15 +209,18 @@ def main():
     view_location = glGetUniformLocation(shader_program, "view")
     projection_location = glGetUniformLocation(shader_program, "projection")
     tessellation_level_location = glGetUniformLocation(shader_program, "gTessellationLevel")
+    illuminate_everything_location = glGetUniformLocation(shader_program,"illuminate_everything")
 
 
     # Replace 'path/to/your/model.obj' with your actual model file path
-    model_path = 'models/susanne.obj'
     model_vao, num_vertices = load_model(model_path)
 
     # Set up initial values
     view_matrix = glm.lookAt(glm.vec3(0, 0, 3), glm.vec3(0, 0, 0), glm.vec3(0, 1, 0))
     projection_matrix = glm.perspective(glm.radians(45.0), 800 / 600, 0.1, 100.0)
+
+    glfw.set_key_callback(window, key_callback)
+
 
     while not glfw.window_should_close(window):
         if wireframemode:
@@ -224,6 +243,7 @@ def main():
         glUniformMatrix4fv(view_location, 1, GL_FALSE, glm.value_ptr(view_matrix))
         glUniformMatrix4fv(projection_location, 1, GL_FALSE, glm.value_ptr(projection_matrix))
         glUniform1f(tessellation_level_location, tessellation_level)
+        glUniform1i(illuminate_everything_location,illuminate_everything)
 
 
         glBindVertexArray(model_vao)
