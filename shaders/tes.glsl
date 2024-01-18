@@ -4,7 +4,8 @@ layout(triangles, equal_spacing, ccw) in;
                                                                                                  
 uniform mat4 model;
 uniform mat4 view;
-uniform mat4 projection;                                                                          
+uniform mat4 projection;     
+uniform float PN_factor;                                                                     
                                                                                                 
 struct OutputPatch                                                                              
 {                                                                                               
@@ -43,7 +44,8 @@ void main()
     // Interpolate the attributes of the output vertex using the barycentric coordinates        
 
     Normal_FS_in = interpolate3D(oPatch.Normal[0], oPatch.Normal[1], oPatch.Normal[2]);         
-                                                                                                
+
+    // gl_TessCoord sind die Baryzentrischen Koordinaten die vom Tesselator als Punkte evaluiert wurden
     float u = gl_TessCoord.x;                                                                   
     float v = gl_TessCoord.y;                                                                   
     float w = gl_TessCoord.z;                                                                   
@@ -52,11 +54,21 @@ void main()
     float wPow3 = pow(w, 3);                                                                    
     float uPow2 = pow(u, 2);                                                                    
     float vPow2 = pow(v, 2);                                                                    
-    float wPow2 = pow(w, 2);                                                                    
+    float wPow2 = pow(w, 2);
+
+    vec3 FlatTrianglePos_FS_in = oPatch.WorldPos_B300 * w + oPatch.WorldPos_B030 * u + oPatch.WorldPos_B003 * v;
+
+    // alternative Arten das Dreieck zu berechnen, führt zu lustigen effekten bei der interpolation
+    // vec3 FlatTrianglePos_FS_in = oPatch.WorldPos_B300 * u + oPatch.WorldPos_B030 * v + oPatch.WorldPos_B003 * w;
+    // vec3 FlatTrianglePos_FS_in = oPatch.WorldPos_B300 * u + oPatch.WorldPos_B030 * w + oPatch.WorldPos_B003 * v;
+
+
     WorldPos_FS_in = oPatch.WorldPos_B300 * wPow3 + oPatch.WorldPos_B030 * uPow3 + oPatch.WorldPos_B003 * vPow3 +                               
                      oPatch.WorldPos_B210 * 3.0 * wPow2 * u + oPatch.WorldPos_B120 * 3.0 * w * uPow2 + oPatch.WorldPos_B201 * 3.0 * wPow2 * v + 
                      oPatch.WorldPos_B021 * 3.0 * uPow2 * v + oPatch.WorldPos_B102 * 3.0 * w * vPow2 + oPatch.WorldPos_B012 * 3.0 * u * vPow2 + 
-                     oPatch.WorldPos_B111 * 6.0 * w * u * v;   
+                     oPatch.WorldPos_B111 * 6.0 * w * u * v;  
+
+    WorldPos_FS_in = PN_factor * WorldPos_FS_in + (1-PN_factor) * FlatTrianglePos_FS_in; 
     mat4 gVP = projection * view;                               
     gl_Position = gVP * vec4(WorldPos_FS_in, 1.0);                                              
 }                                                                                               
