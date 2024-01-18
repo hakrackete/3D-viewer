@@ -1,3 +1,5 @@
+// Tesselation Code by Ogldev https://ogldev.org/www/tutorial31/tutorial31.html
+
 #version 410 core                                                                               
                                                                                                 
 // define the number of CPs in the output patch                                                 

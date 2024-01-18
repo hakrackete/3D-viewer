@@ -209,6 +209,7 @@ def main():
     if not glfw.init():
         return
 
+    glfw.window_hint(glfw.SAMPLES, 10)
     window = glfw.create_window(window_width, window_height, "3D Model Viewer", None, None)
     if not window:
         glfw.terminate()
@@ -222,6 +223,7 @@ def main():
     glfw.make_context_current(window)
 
     glEnable(GL_DEPTH_TEST)
+    glEnable(GL_MULTISAMPLE)
 
     # glEnable(GL_CULL_FACE)
     # glCullFace(GL_BACK) 

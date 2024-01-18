@@ -20,7 +20,7 @@ void main() {
 
         // Final color calculation
         vec3 objectColor = vec3(1.0, 0.5, 0.2);  // Beispielobjektfarbe (orange)
-        vec3 result = objectColor * diffuse + objectColor * ambient;
+        vec3 result =  1.2 * objectColor * diffuse + objectColor * ambient;
         FragColor = vec4(result, 1.0);
 
     }else{
