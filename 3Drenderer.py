@@ -6,7 +6,7 @@ import ctypes
 from pygame import time
 
 
-model_path = 'models/susanne.obj'
+model_path = 'models/human_with_eyes.obj'
 window_width = 800
 window_height = 600
 
@@ -78,39 +78,41 @@ def compile_shader_program(vertex_source, fragment_source,tcontrol_source,tevalu
 
     return shader_program
 
-def load_model(file_path):
+def load_scene(file_path):
     with pyassimp.load(file_path) as scene:
         if not scene.meshes:
-            raise ValueError(f"No meshes found in the model loaded from {file_path}")
+            raise ValueError(f"No meshes found in the scene loaded from {file_path}")
 
-        mesh = scene.meshes[0]
+        vaos = []
+        num_vertices_list = []
 
-        vao = glGenVertexArrays(1)
-        glBindVertexArray(vao)
+        for mesh in scene.meshes:
+            vao = glGenVertexArrays(1)
+            glBindVertexArray(vao)
 
-        vbo = glGenBuffers(1)
-        glBindBuffer(GL_ARRAY_BUFFER, vbo)
+            vbo = glGenBuffers(1)
+            glBindBuffer(GL_ARRAY_BUFFER, vbo)
 
-        # Combine positions and normals into a single interleaved array
-        interleaved_data = []
-        for i in range(len(mesh.vertices)):
-            interleaved_data.extend(mesh.vertices[i])
-            interleaved_data.extend(mesh.normals[i])
+            interleaved_data = []
+            for i in range(len(mesh.vertices)):
+                interleaved_data.extend(mesh.vertices[i])
+                interleaved_data.extend(mesh.normals[i])
 
-        glBufferData(GL_ARRAY_BUFFER, (GLfloat * len(interleaved_data))(*interleaved_data), GL_STATIC_DRAW)
+            glBufferData(GL_ARRAY_BUFFER, (GLfloat * len(interleaved_data))(*interleaved_data), GL_STATIC_DRAW)
 
-        # Positions
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * ctypes.sizeof(GLfloat), None)
-        glEnableVertexAttribArray(0)
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * ctypes.sizeof(GLfloat), None)
+            glEnableVertexAttribArray(0)
 
-        # Normals
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * ctypes.sizeof(GLfloat), ctypes.c_void_p(3 * ctypes.sizeof(GLfloat)))
-        glEnableVertexAttribArray(1)
+            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * ctypes.sizeof(GLfloat), ctypes.c_void_p(3 * ctypes.sizeof(GLfloat)))
+            glEnableVertexAttribArray(1)
 
-        glBindVertexArray(0)
-        glBindBuffer(GL_ARRAY_BUFFER, 0)
+            glBindVertexArray(0)
+            glBindBuffer(GL_ARRAY_BUFFER, 0)
 
-    return vao, len(mesh.vertices)
+            vaos.append(vao)
+            num_vertices_list.append(len(mesh.vertices))
+
+        return vaos, num_vertices_list
 
 def key_callback(window, key, scancode, action, mods):
     global wireframemode,illuminate_everything,wireframemode,PN_factor
@@ -142,7 +144,7 @@ def process_input(window):
     # Skalierungsgeschwindigkeit
     scaling_speed = 0.07
 
-    PN_factor_speed = 0.07
+    PN_factor_speed = 2
 
     # Abfrage für Pfeiltasten (Rechts, Links, Hoch, Runter)
     if glfw.get_key(window, glfw.KEY_RIGHT) == glfw.PRESS:
@@ -246,7 +248,7 @@ def main():
 
 
     # Replace 'path/to/your/model.obj' with your actual model file path
-    model_vao, num_vertices = load_model(model_path)
+    vaos, num_vertices_list = load_scene(model_path)
 
     # Set up initial values
     view_matrix = glm.lookAt(glm.vec3(0, 0, 3), glm.vec3(0, 0, 0), glm.vec3(0, 1, 0))
@@ -279,13 +281,13 @@ def main():
         glUniform1i(illuminate_everything_location,illuminate_everything)
         glUniform1f(PN_factor_location,PN_factor)
 
+        for i,model_vao in enumerate(vaos):
+            glBindVertexArray(model_vao)
+            check_gl_error()
 
-        glBindVertexArray(model_vao)
-        check_gl_error()
-
-        glDrawArrays(GL_PATCHES, 0, num_vertices)
-        # glDrawElements(GL_PATCHES,num_vertices,GL_UNSIGNED_INT,0)
-        check_gl_error()
+            glDrawArrays(GL_PATCHES, 0, num_vertices_list[i])
+            # glDrawElements(GL_PATCHES,num_vertices,GL_UNSIGNED_INT,0)
+            check_gl_error()
 
 
         glfw.swap_buffers(window)
