@@ -6,7 +6,7 @@ import ctypes
 from pygame import time
 
 
-model_path = 'models/human_head.fbx'
+model_path = 'models/susanne.obj'
 window_width = 800
 window_height = 600
 
@@ -179,7 +179,7 @@ def process_input(window):
     # der PN faktor sorgt für die interpolation zwischen flachen Dreiecken und den tesselierten Dreiecken, hat nur didaktischen Wert
     # bitte nicht bei real-world anwendungen implementieren
     # diese Zeile auskommentiern um lustige effekte zu erzielen
-    # PN_factor = min(max(PN_factor,0),1)
+    PN_factor = min(max(PN_factor,0),1)
 
 
 
