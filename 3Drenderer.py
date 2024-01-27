@@ -21,6 +21,7 @@ tessellation_level = 1.0  # Setze hier den gewünschten Wert
 
 wireframemode = False
 illuminate_everything = 0
+smooth_shade = 1
 
 PN_factor = 1
 
@@ -115,11 +116,13 @@ def load_scene(file_path):
         return vaos, num_vertices_list
 
 def key_callback(window, key, scancode, action, mods):
-    global wireframemode,illuminate_everything,wireframemode,PN_factor
+    global wireframemode,illuminate_everything,wireframemode,PN_factor,smooth_shade
     if key == glfw.KEY_T and action == glfw.PRESS:
         wireframemode = not(wireframemode)
     if key == glfw.KEY_L and action == glfw.PRESS:
         illuminate_everything = 1 - illuminate_everything
+    if key == glfw.KEY_F and action == glfw.PRESS:
+        smooth_shade  = 1 - smooth_shade
     if key == glfw.KEY_H and action == glfw.PRESS:
 
         print(f"""
@@ -127,6 +130,7 @@ def key_callback(window, key, scancode, action, mods):
 [T] toggle wireframe Modus: {wireframemode}
 [L] illuminate Everything: {bool(illuminate_everything)}
 [N,M] Scale the PN-Factor: {PN_factor}
+[F] toggle between smooth and Flat shading: {smooth_shade}
 [Arrow-Keys] change Rotation of the Model
 [W,S] Zoom in/out 
 [H] Print this Help screen""")
@@ -144,7 +148,7 @@ def process_input(window):
     # Skalierungsgeschwindigkeit
     scaling_speed = 0.07
 
-    PN_factor_speed = 2
+    PN_factor_speed = 0.07
 
     # Abfrage für Pfeiltasten (Rechts, Links, Hoch, Runter)
     if glfw.get_key(window, glfw.KEY_RIGHT) == glfw.PRESS:
@@ -239,6 +243,7 @@ def main():
     tessellation_level_location = glGetUniformLocation(shader_program, "gTessellationLevel")
     illuminate_everything_location = glGetUniformLocation(shader_program,"illuminate_everything")
     PN_factor_location = glGetUniformLocation(shader_program,"PN_factor")
+    smooth_shade_location = glGetUniformLocation(shader_program,"smooth_shade")
 
 
     # Replace 'path/to/your/model.obj' with your actual model file path
@@ -274,6 +279,7 @@ def main():
         glUniform1f(tessellation_level_location, tessellation_level)
         glUniform1i(illuminate_everything_location,illuminate_everything)
         glUniform1f(PN_factor_location,PN_factor)
+        glUniform1f(smooth_shade_location,smooth_shade)
 
         for i,model_vao in enumerate(vaos):
             glBindVertexArray(model_vao)

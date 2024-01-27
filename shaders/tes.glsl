@@ -6,7 +6,8 @@ layout(triangles, equal_spacing, ccw) in;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;     
-uniform float PN_factor;                                                                     
+uniform float PN_factor; 
+uniform float smooth_shade;                                                                    
                                                                                                 
 struct OutputPatch                                                                              
 {                                                                                               
@@ -38,13 +39,22 @@ vec2 interpolate2D(vec2 v0, vec2 v1, vec2 v2)
 vec3 interpolate3D(vec3 v0, vec3 v1, vec3 v2)                                                   
 {                                                                                               
     return vec3(gl_TessCoord.x) * v0 + vec3(gl_TessCoord.y) * v1 + vec3(gl_TessCoord.z) * v2;   
-}                                                                                               
+}
+vec3 flatshade(vec3 v0, vec3 v1, vec3 v2)
+{
+    return vec3(0.33) * v0 + vec3(0.33) * v1 + vec3(0.33) * v2;   
+}                                                                                          
                                                                                                 
 void main()                                                                                     
 {                                                                                               
     // Interpolate the attributes of the output vertex using the barycentric coordinates        
 
-    Normal_FS_in = interpolate3D(oPatch.Normal[0], oPatch.Normal[1], oPatch.Normal[2]);         
+    if (smooth_shade == 1){
+        Normal_FS_in = interpolate3D(oPatch.Normal[0], oPatch.Normal[1], oPatch.Normal[2]);  
+    }
+    else{
+        Normal_FS_in = flatshade(oPatch.Normal[0], oPatch.Normal[1], oPatch.Normal[2]);
+    }
 
     // gl_TessCoord sind die Baryzentrischen Koordinaten die vom Tesselator als Punkte evaluiert wurden
     float u = gl_TessCoord.x;                                                                   
