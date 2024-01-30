@@ -235,6 +235,7 @@ def main():
 
     # Set up shaders
     shader_program = compile_shader_program(vertex_shader, fragment_shader,tc_shader,te_shader)
+    
 
     # Set up uniform locations
     model_location = glGetUniformLocation(shader_program, "model")
@@ -244,6 +245,7 @@ def main():
     illuminate_everything_location = glGetUniformLocation(shader_program,"illuminate_everything")
     PN_factor_location = glGetUniformLocation(shader_program,"PN_factor")
     smooth_shade_location = glGetUniformLocation(shader_program,"smooth_shade")
+    camera_position_location = glGetUniformLocation(shader_program,"cam_pos")
 
 
     # Replace 'path/to/your/model.obj' with your actual model file path
@@ -251,6 +253,7 @@ def main():
 
     # Set up initial values
     view_matrix = glm.lookAt(glm.vec3(0, 0, 3), glm.vec3(0, 0, 0), glm.vec3(0, 1, 0))
+
     projection_matrix = glm.perspective(glm.radians(45.0), window_width / window_height, 0.1, 100.0)
 
     glfw.set_key_callback(window, key_callback)
@@ -267,6 +270,11 @@ def main():
 
         process_input(window)
 
+        inv = glm.inverse(view_matrix)
+        camera_position = glm.column(inv, 3)
+        camera_position = glm.vec3(camera_position.x,camera_position.y,camera_position.z)
+        # print(camera_position)
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
         glUseProgram(shader_program)
@@ -280,6 +288,7 @@ def main():
         glUniform1i(illuminate_everything_location,illuminate_everything)
         glUniform1f(PN_factor_location,PN_factor)
         glUniform1f(smooth_shade_location,smooth_shade)
+        glUniform3f(camera_position_location,camera_position.x,camera_position.y,camera_position.z)
 
         for i,model_vao in enumerate(vaos):
             glBindVertexArray(model_vao)

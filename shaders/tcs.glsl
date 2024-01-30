@@ -23,7 +23,11 @@ struct OutputPatch
     vec3 WorldPos_B210;                                                                         
     vec3 WorldPos_B120;                                                                         
     vec3 WorldPos_B111;                                                                         
-    vec3 Normal[3];                                                                                                                                                      
+    vec3 Normal[3];
+    vec3 Normal_110;
+    vec3 Normal_011;
+    vec3 Normal_101;
+                                                                                                                                                          
 };                                                                                              
                                                                                                 
 // attributes of the output CPs                                                                 
@@ -35,11 +39,22 @@ vec3 ProjectToPlane(vec3 Point, vec3 PlanePoint, vec3 PlaneNormal)
     float Len = dot(v, PlaneNormal);                                                            
     vec3 d = Len * PlaneNormal;                                                                 
     return (Point - d);                                                                         
-}                                                                                               
-                                                                                                
+}             
+
+// vec3 CalcNormals(vec3 Pi,vec3 Pj,vec3 Ni, vec3 Nj){
+//     vec3 vij = 2 * ()/() 
+// }
+
+
                                                                                                 
 void CalcPositions()                                                                            
-{                                                                                               
+{                     
+    // Set the control points of the output patch                                               
+    for (int i = 0 ; i < 3 ; i++) {                                                             
+        oPatch.Normal[i] = Normal_CS_in[i];                                                                                                
+    }
+
+
     // The original vertices stay the same                                                      
     oPatch.WorldPos_B030 = WorldPos_CS_in[0];                                                   
     oPatch.WorldPos_B003 = WorldPos_CS_in[1];                                                   
@@ -70,15 +85,14 @@ void CalcPositions()
     vec3 Center = (oPatch.WorldPos_B003 + oPatch.WorldPos_B030 + oPatch.WorldPos_B300) / 3.0;                
     oPatch.WorldPos_B111 = (oPatch.WorldPos_B021 + oPatch.WorldPos_B012 + oPatch.WorldPos_B102 +             
                             oPatch.WorldPos_B201 + oPatch.WorldPos_B210 + oPatch.WorldPos_B120) / 6.0;       
-    oPatch.WorldPos_B111 += (oPatch.WorldPos_B111 - Center) / 2.0;                              
+    oPatch.WorldPos_B111 += (oPatch.WorldPos_B111 - Center) / 2.0;
+
+
 }                                                                                               
                                                                                                 
 void main()                                                                                     
 {                                                                                               
-    // Set the control points of the output patch                                               
-    for (int i = 0 ; i < 3 ; i++) {                                                             
-        oPatch.Normal[i] = Normal_CS_in[i];                                                                                                
-    }                                                                                           
+                                                                                           
                                                                                                 
     CalcPositions();                                                                            
                                                                                                 
